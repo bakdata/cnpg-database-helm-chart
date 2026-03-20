@@ -21,7 +21,7 @@ jobs:
         run: |
           version=$(sed -n 's/^current_version = \(\.*\)/\1/p' < .bumpversion.cfg)
           if [[ "${GITHUB_REF}" != refs/tags/* ]]; then
-            version="${version}-SNAPSHOT"
+            version="${version}-dev"
           fi
           echo "version=${version}" >> "$GITHUB_OUTPUT"
 
