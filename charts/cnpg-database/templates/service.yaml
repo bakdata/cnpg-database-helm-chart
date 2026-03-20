@@ -1,0 +1,43 @@
+{{- if .Values.additionalService.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "cnpg-database.fullname" . }}
+  {{- with .Values.additionalService.labels }}
+  labels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.additionalService.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if eq .Values.additionalService.type "ClusterIP" }}
+  type: ClusterIP
+  {{- with .Values.additionalService.clusterIP }}
+  clusterIP: {{ . }}
+  {{- end }}
+  {{- else if eq .Values.additionalService.type "LoadBalancer" }}
+  type: LoadBalancer
+  {{- with .Values.additionalService.loadBalancerIP }}
+  loadBalancerIP: {{ . }}
+  {{- end }}
+  {{- with .Values.additionalService.loadBalancerClass }}
+  loadBalancerClass: {{ . }}
+  {{- end }}
+  {{- with .Values.additionalService.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- else }}
+  type: {{ .Values.additionalService.type }}
+  {{- end }}
+  ports:
+  - name: postgres
+    protocol: TCP
+    port: {{ .Values.additionalService.port }}
+    targetPort: {{ .Values.additionalService.targetPort }}
+  selector:
+    {{- include "cnpg-database.selectorLabels" . | nindent 4 }}
+    cnpg.io/instanceRole: {{ .Values.additionalService.instanceRole }}
+{{- end }}

@@ -1,0 +1,113 @@
+postgres:
+  description: ""
+  annotations: {}
+
+  instances: 1
+  image:
+    repository: ghcr.io/cloudnative-pg/postgresql
+    tag: "18-standard-trixie"
+
+  enablePDB: true
+  enableSuperuserAccess: true
+  enablePodMonitor: true
+
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "50m"
+    limits:
+      memory: "512Mi"
+      cpu: "50m"
+
+  # Storage configuration, see https://cloudnative-pg.io/documentation/current/storage/
+  storage:
+    class: standard
+    data:
+      resizeInUseVolume: true
+      size: 10Gi
+    wal:
+      resizeInUseVolume: true
+      size: 10Gi
+
+  # Bootstrap the PostgreSQL: https://cloudnative-pg.io/documentation/current/bootstrap/
+  bootstrap:
+    database: db
+    owner: user
+    recovery:
+      enabled: false
+      # Name of the S3 backup to recover from. Uses S3 settings from backup section.
+      name: ""
+
+  # Parameters passed to PostgreSQL: https://cloudnative-pg.io/documentation/current/postgresql_conf/
+  parameters: {}
+
+  groups: []
+  # - "my_group_role"
+
+  # Usernames are unsealed and passwords are sealed (refer to https://github.com/bitnami-labs/sealed-secrets)
+  users: []
+  # - username: "john.doe"
+  #   password: "MySealedPassword"
+  #   inRoles:
+  #     - my_group_role
+
+  # Secret name for root CA certificate
+  serverCASecret: ""
+
+backup:
+  enabled: false
+
+  # Name of the current instance backup into the S3 bucket.
+  # Cannot be set to a backup name that already exists inside the bucket.
+  # For more details see https://github.com/cloudnative-pg/cloudnative-pg/issues/5203
+  name: ""
+  annotations: {}
+
+  # Schedule of the backup job
+  schedule: "0 0 0 * * *"
+  suspend: false
+  immediate: false
+
+  retentionPolicy: 14d
+  target: "prefer-standby"
+
+  trustBundleName: ""
+  trustBundleKey: ""
+
+  # access and secret keys are sealed (refer to https://github.com/bitnami-labs/sealed-secrets)
+  s3:
+    destinationPath: s3://my-bucket
+    endpointURL: https://my-s3-endpoint.example
+    accessKey: "MyAccessKeyId"
+    secretKey: "MySecretKeyId"
+  data:
+    compression: gzip
+  wal:
+    compression: gzip
+    maxParallel: 8
+    encryption: AES256
+
+# CNPG deploys services for the database by default. This is just here if you require an extra service.
+additionalService:
+  enabled: false
+
+  type: ClusterIP
+  clusterIP: ""
+  loadBalancerIP: ""
+  loadBalancerClass: ""
+  loadBalancerSourceRanges: []
+
+  port: 5432
+  targetPort: 5432
+
+  # Whether to chose the primary or the readonly replica instance
+  instanceRole: replica
+
+cert:
+  enabled: false
+  dnsNames: []
+  usages: []
+  issuerRef:
+    # group: cert-manager.io
+    # kind: ClusterIssuer
+    # name: my-issuer
