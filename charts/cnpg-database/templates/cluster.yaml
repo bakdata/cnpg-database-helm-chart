@@ -78,7 +78,7 @@ spec:
         ensure: present
         login: true
         passwordSecret:
-          name: {{ printf "%s-credentials" .username | replace "." "-" | quote }}
+          name: {{ printf "%s-creds-%s" (include "cnpg-database.fullname" $) .username | replace "." "-" | trunc 63 | quote }}
         {{- with .inRoles }}
         inRoles:
           {{- range . }}
