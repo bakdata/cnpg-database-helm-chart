@@ -3,7 +3,6 @@ apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
   name: {{ include "cnpg-database.fullname" . }}
-  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "cnpg-database.labels" . | nindent 4 }}
   {{- with .Values.postgres.annotations }}
