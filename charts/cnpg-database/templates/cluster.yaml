@@ -118,7 +118,7 @@ spec:
         encryption: {{ . }}
         {{- end }}
   {{- end }}
-  {{- if or .Values.postgres.serverCASecret .Values.cert.enabled }}
+  {{- if or .Values.postgres.serverCASecret .Values.postgres.serverTLSSecret }}
   certificates:
     {{- with .Values.postgres.serverCASecret }}
     serverCASecret: {{ . }}
