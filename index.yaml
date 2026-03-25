@@ -2,9 +2,9 @@ apiVersion: v1
 entries:
   cnpg-database:
   - apiVersion: v2
-    created: "2026-03-25T15:53:36.347830988Z"
+    created: "2026-03-25T16:04:38.33215853Z"
     description: A Helm chart for deploying a CNPG database
-    digest: 559218d8dcf086bf0430999f35b1d18e5c23dfe7572753c5cf74d0a203706c65
+    digest: b70489b99e45036be35e3bf61b38b2896b91e6c79b00dbf66079fb1c08829048
     maintainers:
     - email: opensource@bakdata.com
       name: bakdata
@@ -14,7 +14,7 @@ entries:
     - cnpg-database/cnpg-database-0.1.0-dev.tgz
     version: 0.1.0-dev
   - apiVersion: v2
-    created: "2026-03-25T15:53:36.347415844Z"
+    created: "2026-03-25T16:04:38.33171347Z"
     description: A Helm chart for deploying a CNPG database
     digest: bbf54c0b5aafab3b7e10da566b27eba15cf9938fc6f07289eb7172e1fcc867db
     maintainers:
@@ -25,4 +25,4 @@ entries:
     urls:
     - cnpg-database/cnpg-database-0.1.0-SNAPSHOT.tgz
     version: 0.1.0-SNAPSHOT
-generated: "2026-03-25T15:53:36.342666732Z"
+generated: "2026-03-25T16:04:38.320163652Z"
