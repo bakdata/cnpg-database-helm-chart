@@ -38,6 +38,6 @@ spec:
     port: {{ .Values.additionalService.port }}
     targetPort: {{ .Values.additionalService.targetPort }}
   selector:
-    {{- include "cnpg-database.selectorLabels" . | nindent 4 }}
+    cnpg.io/cluster: {{ include "cnpg-database.fullname" . }}
     cnpg.io/instanceRole: {{ .Values.additionalService.instanceRole }}
 {{- end }}
