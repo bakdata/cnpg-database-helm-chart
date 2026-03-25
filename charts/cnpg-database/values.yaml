@@ -53,6 +53,8 @@ postgres:
 
   # Secret name for root CA certificate
   serverCASecret: ""
+  # Secret name for TLS
+  serverTLSSecret: ""
 
 backup:
   enabled: false
