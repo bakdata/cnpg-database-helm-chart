@@ -1,0 +1,8 @@
+apiVersion: v2
+name: cnpg-database
+description: A Helm chart for deploying a CNPG database
+version: 0.1.0
+maintainers:
+  - name: bakdata
+    email: opensource@bakdata.com
+    url: bakdata.com

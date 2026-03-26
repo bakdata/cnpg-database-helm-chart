@@ -1,0 +1,127 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/refs/heads/main/postgresql.cnpg.io/cluster_v1.json
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: {{ include "cnpg-database.fullname" . }}
+  labels:
+    {{- include "cnpg-database.labels" . | nindent 4 }}
+  {{- with .Values.postgres.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.postgres.description }}
+  description: {{ .Values.postgres.description }}
+  {{- end }}
+  instances: {{ .Values.postgres.instances }}
+  imageName: "{{ .Values.postgres.image.repository }}:{{ .Values.postgres.image.tag }}"
+  enablePDB: {{ .Values.postgres.enablePDB }}
+  enableSuperuserAccess: {{ .Values.postgres.enableSuperuserAccess }}
+  {{- with .Values.postgres.resources }}
+  resources:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  storage:
+    storageClass: {{ .Values.postgres.storage.class }}
+    resizeInUseVolumes: {{ .Values.postgres.storage.data.resizeInUseVolume }}
+    size: {{ .Values.postgres.storage.data.size }}
+  walStorage:
+    storageClass: {{ .Values.postgres.storage.class }}
+    size: {{ .Values.postgres.storage.wal.size }}
+    resizeInUseVolumes: {{ .Values.postgres.storage.wal.resizeInUseVolume }}
+  {{- if .Values.postgres.bootstrap.recovery.enabled }}
+  bootstrap:
+    recovery:
+      source: {{ .Values.postgres.bootstrap.recovery.name | default (include "cnpg-database.fullname" .) | quote }}
+      database: {{ .Values.postgres.bootstrap.database }}
+      owner: {{ .Values.postgres.bootstrap.owner }}
+  externalClusters:
+    - name: {{ .Values.postgres.bootstrap.recovery.name | default (include "cnpg-database.fullname" .) | quote }}
+      barmanObjectStore:
+        serverName: {{ .Values.postgres.bootstrap.recovery.name | default (include "cnpg-database.fullname" .) | quote }}
+        destinationPath: {{ .Values.backup.s3.destinationPath | quote }}
+        endpointURL: {{ .Values.backup.s3.endpointURL | quote }}
+        {{- if and .Values.backup.trustBundleName .Values.backup.trustBundleKey }}
+        endpointCA:
+          name: {{ .Values.backup.trustBundleName }}
+          key: {{ .Values.backup.trustBundleKey }}
+        {{- end }}
+        s3Credentials:
+          accessKeyId:
+            key: S3_ACCESS_KEY
+            name: {{ include "cnpg-database.fullname" . }}-s3
+          secretAccessKey:
+            key: S3_SECRET_KEY
+            name: {{ include "cnpg-database.fullname" . }}-s3
+  {{- else }}
+  bootstrap:
+    initdb:
+      database: {{ .Values.postgres.bootstrap.database }}
+      owner: {{ .Values.postgres.bootstrap.owner }}
+  {{- end }}
+  {{- with .Values.postgres.parameters }}
+  postgresql:
+    parameters:
+      {{- toYaml . | nindent 6 }}
+  {{- end }}
+  {{- if or .Values.postgres.groups .Values.postgres.users }}
+  managed:
+    roles:
+      {{- range .Values.postgres.groups }}
+      - name: {{ . | quote }}
+        ensure: present
+      {{- end }}
+      {{- range .Values.postgres.users }}
+      - name: {{ .username | quote }}
+        ensure: present
+        login: true
+        passwordSecret:
+          name: {{ printf "%s-creds-%s" (include "cnpg-database.fullname" $) .username | replace "." "-" | trunc 63 | quote }}
+        {{- with .inRoles }}
+        inRoles:
+          {{- range . }}
+          - {{ . | quote }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+  {{- end }}
+  {{- if .Values.backup.enabled }}
+  backup:
+    retentionPolicy: {{ .Values.backup.retentionPolicy }}
+    target: {{ .Values.backup.target }}
+    barmanObjectStore:
+      serverName: {{ .Values.backup.name | default (include "cnpg-database.fullname" .) | quote }}
+      data:
+        compression: {{ .Values.backup.data.compression }}
+      destinationPath: {{ .Values.backup.s3.destinationPath }}
+      endpointURL: {{ .Values.backup.s3.endpointURL }}
+      {{- if and .Values.backup.trustBundleName .Values.backup.trustBundleKey }}
+      endpointCA:
+        name: {{ .Values.backup.trustBundleName }}
+        key: {{ .Values.backup.trustBundleKey }}
+      {{- end }}
+      s3Credentials:
+        accessKeyId:
+          key: S3_ACCESS_KEY
+          name: {{ include "cnpg-database.fullname" . }}-s3
+        secretAccessKey:
+          key: S3_SECRET_KEY
+          name: {{ include "cnpg-database.fullname" . }}-s3
+      wal:
+        compression: {{ .Values.backup.wal.compression }}
+        {{- with .Values.backup.wal.maxParallel }}
+        maxParallel: {{ . }}
+        {{- end }}
+        {{- with .Values.backup.wal.encryption }}
+        encryption: {{ . }}
+        {{- end }}
+  {{- end }}
+  {{- if or .Values.postgres.serverCASecret .Values.postgres.serverTLSSecret }}
+  certificates:
+    {{- with .Values.postgres.serverCASecret }}
+    serverCASecret: {{ . }}
+    {{- end }}
+    {{- with .Values.postgres.serverTLSSecret }}
+    serverTLSSecret: {{ . }}
+    {{- end }}
+  {{- end }}
