@@ -17,8 +17,6 @@ spec:
   imageName: "{{ .Values.postgres.image.repository }}:{{ .Values.postgres.image.tag }}"
   enablePDB: {{ .Values.postgres.enablePDB }}
   enableSuperuserAccess: {{ .Values.postgres.enableSuperuserAccess }}
-  monitoring:
-    enablePodMonitor: {{ .Values.postgres.enablePodMonitor }}
   {{- with .Values.postgres.resources }}
   resources:
     {{- toYaml . | nindent 4 }}

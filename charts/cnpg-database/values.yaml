@@ -9,7 +9,6 @@ postgres:
 
   enablePDB: true
   enableSuperuserAccess: true
-  enablePodMonitor: true
 
   resources:
     requests:
@@ -19,7 +18,7 @@ postgres:
       memory: "512Mi"
       cpu: "50m"
 
-  # Storage configuration, see https://cloudnative-pg.io/documentation/current/storage/
+  # Storage configuration, see https://cloudnative-pg.io/docs/current/storage/
   storage:
     class: standard
     data:
@@ -29,7 +28,7 @@ postgres:
       resizeInUseVolume: true
       size: 10Gi
 
-  # Bootstrap the PostgreSQL: https://cloudnative-pg.io/documentation/current/bootstrap/
+  # Bootstrap the PostgreSQL: https://cloudnative-pg.io/docs/current/bootstrap/
   bootstrap:
     database: db
     owner: user
@@ -38,7 +37,7 @@ postgres:
       # Name of the S3 backup to recover from. Uses S3 settings from backup section.
       name: ""
 
-  # Parameters passed to PostgreSQL: https://cloudnative-pg.io/documentation/current/postgresql_conf/
+  # Parameters passed to PostgreSQL: https://cloudnative-pg.io/docs/current/postgresql_conf/
   parameters: {}
 
   groups: []
@@ -88,6 +87,10 @@ backup:
     compression: gzip
     maxParallel: 8
     encryption: AES256
+
+# See https://cloudnative-pg.io/docs/current/monitoring/#monitoring-with-the-prometheus-operator
+podMonitor:
+  enabled: true
 
 # CNPG deploys services for the database by default. This is just here if you require an extra service.
 additionalService:
