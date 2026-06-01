@@ -107,3 +107,8 @@ additionalService:
 
   # Whether to chose the primary or the readonly replica instance
   instanceRole: replica
+
+# Enviornment variables
+env: {}
+  # - name: MY_ENV_VARIABLE
+  #   value: my-value
