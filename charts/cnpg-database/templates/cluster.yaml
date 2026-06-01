@@ -127,5 +127,5 @@ spec:
   {{- end }}
   {{- with .Values.env }}
   env:
-      {{- toYaml . | nindent 4 }}
+    {{- toYaml . | nindent 4 }}
   {{- end }}
