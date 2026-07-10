@@ -59,10 +59,16 @@ spec:
       database: {{ .Values.postgres.bootstrap.database }}
       owner: {{ .Values.postgres.bootstrap.owner }}
   {{- end }}
-  {{- with .Values.postgres.parameters }}
+  {{- if or .Values.postgres.parameters .Values.postgres.extensions }}
   postgresql:
+    {{- with .Values.postgres.parameters }}
     parameters:
       {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- with .Values.postgres.extensions }}
+    extensions:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
   {{- end }}
   {{- if or .Values.postgres.groups .Values.postgres.users }}
   managed:
