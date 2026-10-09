@@ -6,7 +6,7 @@ metadata:
   name: {{ include "cnpg-database.fullname" . }}
   labels:
     {{- include "cnpg-database.labels" . | nindent 4 }}
-  {{- with .Values.backup.annotations }}
+  {{- with .Values.backup.plugin.objectStore.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}

@@ -70,6 +70,9 @@ backup:
     # Configuration of the plugin sidecar running in the instance pods (e.g. resources, env, logLevel)
     # See https://cloudnative-pg.io/plugin-barman-cloud/docs/usage/#configuring-the-plugin-instance-sidecar
     instanceSidecarConfiguration: {}
+    objectStore:
+      # Annotations for the ObjectStore resource, which is created for backups and/or recovery
+      annotations: {}
 
   # Name of the current instance backup into the S3 bucket.
   # Cannot be set to a backup name that already exists inside the bucket.
