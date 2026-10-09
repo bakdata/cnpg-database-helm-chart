@@ -13,6 +13,11 @@ spec:
   schedule: {{ .Values.backup.schedule | quote }}
   immediate: {{ .Values.backup.immediate }}
   backupOwnerReference: self
+  {{- if eq .Values.backup.method "plugin" }}
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io
+  {{- end }}
   cluster:
     name: {{ include "cnpg-database.fullname" . }}
 {{- end }}

@@ -1,4 +1,7 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/refs/heads/main/postgresql.cnpg.io/cluster_v1.json
+{{- if not (has .Values.backup.method (list "native" "plugin")) }}
+{{- fail (printf "backup.method must be either \"native\" or \"plugin\", got %q" .Values.backup.method) }}
+{{- end }}
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
@@ -37,6 +40,13 @@ spec:
       owner: {{ .Values.postgres.bootstrap.owner }}
   externalClusters:
     - name: {{ .Values.postgres.bootstrap.recovery.name | default (include "cnpg-database.fullname" .) | quote }}
+      {{- if eq .Values.backup.method "plugin" }}
+      plugin:
+        name: barman-cloud.cloudnative-pg.io
+        parameters:
+          barmanObjectName: {{ include "cnpg-database.fullname" . }}
+          serverName: {{ .Values.postgres.bootstrap.recovery.name | default (include "cnpg-database.fullname" .) | quote }}
+      {{- else }}
       barmanObjectStore:
         serverName: {{ .Values.postgres.bootstrap.recovery.name | default (include "cnpg-database.fullname" .) | quote }}
         destinationPath: {{ .Values.backup.s3.destinationPath | quote }}
@@ -53,6 +63,7 @@ spec:
           secretAccessKey:
             key: S3_SECRET_KEY
             name: {{ include "cnpg-database.fullname" . }}-s3
+      {{- end }}
   {{- else }}
   bootstrap:
     initdb:
@@ -85,7 +96,16 @@ spec:
         {{- end }}
       {{- end }}
   {{- end }}
-  {{- if .Values.backup.enabled }}
+  {{- if and .Values.backup.enabled (eq .Values.backup.method "plugin") }}
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: {{ include "cnpg-database.fullname" . }}
+        serverName: {{ .Values.backup.name | default (include "cnpg-database.fullname" .) | quote }}
+  backup:
+    target: {{ .Values.backup.target }}
+  {{- else if .Values.backup.enabled }}
   backup:
     retentionPolicy: {{ .Values.backup.retentionPolicy }}
     target: {{ .Values.backup.target }}

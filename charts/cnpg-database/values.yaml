@@ -34,7 +34,7 @@ postgres:
     owner: user
     recovery:
       enabled: false
-      # Name of the S3 backup to recover from. Uses S3 settings from backup section.
+      # Name of the S3 backup to recover from. Uses S3 settings and method from backup section.
       name: ""
 
   # Parameters passed to PostgreSQL: https://cloudnative-pg.io/docs/current/postgresql_conf/
@@ -57,6 +57,19 @@ postgres:
 
 backup:
   enabled: false
+
+  # Backup method, either "native" or "plugin".
+  # - native: Barman Cloud support built into CNPG (barmanObjectStore), deprecated since CNPG 1.26
+  # - plugin: Barman Cloud Plugin, requires https://github.com/cloudnative-pg/plugin-barman-cloud to be installed
+  # Migrating from native to plugin keeps existing backups and WAL archives in the bucket,
+  # see https://cloudnative-pg.io/plugin-barman-cloud/docs/migration/
+  method: native
+
+  # Only used if method is "plugin"
+  plugin:
+    # Configuration of the plugin sidecar running in the instance pods (e.g. resources, env, logLevel)
+    # See https://cloudnative-pg.io/plugin-barman-cloud/docs/usage/#configuring-the-plugin-instance-sidecar
+    instanceSidecarConfiguration: {}
 
   # Name of the current instance backup into the S3 bucket.
   # Cannot be set to a backup name that already exists inside the bucket.
