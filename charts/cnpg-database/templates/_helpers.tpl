@@ -60,3 +60,10 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Name of the Barman Cloud plugin
+*/}}
+{{- define "cnpg-database.barmanCloudPluginName" -}}
+barman-cloud.cloudnative-pg.io
+{{- end }}

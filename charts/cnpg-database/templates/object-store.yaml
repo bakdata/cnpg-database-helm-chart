@@ -1,0 +1,50 @@
+{{- if and (eq .Values.backup.method "plugin") (or .Values.backup.enabled .Values.postgres.bootstrap.recovery.enabled) }}
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/refs/heads/main/barmancloud.cnpg.io/objectstore_v1.json
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: {{ include "cnpg-database.fullname" . }}
+  labels:
+    {{- include "cnpg-database.labels" . | nindent 4 }}
+  {{- with .Values.backup.plugin.objectStore.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.backup.enabled }}
+  retentionPolicy: {{ .Values.backup.retentionPolicy | quote }}
+  {{- end }}
+  configuration:
+    destinationPath: {{ .Values.backup.s3.destinationPath | quote }}
+    {{- with .Values.backup.s3.endpointURL }}
+    endpointURL: {{ . | quote }}
+    {{- end }}
+    {{- if and .Values.backup.trustBundleName .Values.backup.trustBundleKey }}
+    endpointCA:
+      name: {{ .Values.backup.trustBundleName }}
+      key: {{ .Values.backup.trustBundleKey }}
+    {{- end }}
+    s3Credentials:
+      accessKeyId:
+        key: S3_ACCESS_KEY
+        name: {{ include "cnpg-database.fullname" . }}-s3
+      secretAccessKey:
+        key: S3_SECRET_KEY
+        name: {{ include "cnpg-database.fullname" . }}-s3
+    {{- with .Values.backup.data.compression }}
+    data:
+      compression: {{ . }}
+    {{- end }}
+    wal:
+      compression: {{ .Values.backup.wal.compression }}
+      {{- with .Values.backup.wal.maxParallel }}
+      maxParallel: {{ . }}
+      {{- end }}
+      {{- with .Values.backup.wal.encryption }}
+      encryption: {{ . }}
+      {{- end }}
+  {{- with .Values.backup.plugin.instanceSidecarConfiguration }}
+  instanceSidecarConfiguration:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
