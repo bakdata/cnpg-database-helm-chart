@@ -16,7 +16,7 @@ spec:
   {{- if eq .Values.backup.method "plugin" }}
   method: plugin
   pluginConfiguration:
-    name: barman-cloud.cloudnative-pg.io
+    name: {{ include "cnpg-database.barmanCloudPluginName" . }}
   {{- end }}
   cluster:
     name: {{ include "cnpg-database.fullname" . }}

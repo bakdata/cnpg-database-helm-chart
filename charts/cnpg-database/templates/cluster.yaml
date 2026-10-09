@@ -42,7 +42,7 @@ spec:
     - name: {{ .Values.postgres.bootstrap.recovery.name | default (include "cnpg-database.fullname" .) | quote }}
       {{- if eq .Values.backup.method "plugin" }}
       plugin:
-        name: barman-cloud.cloudnative-pg.io
+        name: {{ include "cnpg-database.barmanCloudPluginName" . }}
         parameters:
           barmanObjectName: {{ include "cnpg-database.fullname" . }}
           serverName: {{ .Values.postgres.bootstrap.recovery.name | default (include "cnpg-database.fullname" .) | quote }}
@@ -98,7 +98,7 @@ spec:
   {{- end }}
   {{- if and .Values.backup.enabled (eq .Values.backup.method "plugin") }}
   plugins:
-    - name: barman-cloud.cloudnative-pg.io
+    - name: {{ include "cnpg-database.barmanCloudPluginName" . }}
       isWALArchiver: true
       parameters:
         barmanObjectName: {{ include "cnpg-database.fullname" . }}

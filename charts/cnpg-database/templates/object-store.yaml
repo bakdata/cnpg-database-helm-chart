@@ -6,11 +6,19 @@ metadata:
   name: {{ include "cnpg-database.fullname" . }}
   labels:
     {{- include "cnpg-database.labels" . | nindent 4 }}
+  {{- with .Values.backup.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
+  {{- if .Values.backup.enabled }}
   retentionPolicy: {{ .Values.backup.retentionPolicy | quote }}
+  {{- end }}
   configuration:
     destinationPath: {{ .Values.backup.s3.destinationPath | quote }}
-    endpointURL: {{ .Values.backup.s3.endpointURL | quote }}
+    {{- with .Values.backup.s3.endpointURL }}
+    endpointURL: {{ . | quote }}
+    {{- end }}
     {{- if and .Values.backup.trustBundleName .Values.backup.trustBundleKey }}
     endpointCA:
       name: {{ .Values.backup.trustBundleName }}
@@ -23,8 +31,10 @@ spec:
       secretAccessKey:
         key: S3_SECRET_KEY
         name: {{ include "cnpg-database.fullname" . }}-s3
+    {{- with .Values.backup.data.compression }}
     data:
-      compression: {{ .Values.backup.data.compression }}
+      compression: {{ . }}
+    {{- end }}
     wal:
       compression: {{ .Values.backup.wal.compression }}
       {{- with .Values.backup.wal.maxParallel }}
