@@ -40,6 +40,12 @@ postgres:
   # Parameters passed to PostgreSQL: https://cloudnative-pg.io/docs/current/postgresql_conf/
   parameters: {}
 
+  # PostgreSQL Image-Volume based extensions: https://cloudnative-pg.io/docs/current/imagevolume_extensions/
+  extensions: []
+#   - name: pg_repack
+#     image:
+#       reference: ghcr.io/.../pg_repack:1.5.0
+
   groups: []
   # - "my_group_role"
 
