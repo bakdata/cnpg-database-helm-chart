@@ -32,8 +32,9 @@ postgres:
   bootstrap:
     database: db
     owner: user
-    # runs against the application database after it and its owner have been created
-    postInitApplicationSQL: []
+    initdb:
+      # runs against the application database after it and its owner have been created
+      postInitApplicationSQL: []
     #  - CREATE EXTENSION IF NOT EXISTS pg_repack;
     recovery:
       enabled: false
