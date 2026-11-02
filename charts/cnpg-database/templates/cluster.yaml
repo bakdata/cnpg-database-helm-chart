@@ -69,6 +69,10 @@ spec:
     initdb:
       database: {{ .Values.postgres.bootstrap.database }}
       owner: {{ .Values.postgres.bootstrap.owner }}
+      {{- with .Values.postgres.bootstrap.initdb.postInitApplicationSQL }}
+      postInitApplicationSQL:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
   {{- end }}
   {{- with .Values.postgres.parameters }}
   postgresql:

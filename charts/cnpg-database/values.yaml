@@ -32,6 +32,10 @@ postgres:
   bootstrap:
     database: db
     owner: user
+    initdb:
+      # runs against the application database after it and its owner have been created
+      postInitApplicationSQL: []
+    #  - CREATE EXTENSION IF NOT EXISTS pg_repack;
     recovery:
       enabled: false
       # Name of the S3 backup to recover from. Uses S3 settings and method from backup section.
