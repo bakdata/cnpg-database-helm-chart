@@ -18,6 +18,10 @@ postgres:
       memory: "512Mi"
       cpu: "50m"
 
+  # Scheduling of the instance pods, passed as-is to the Cluster's `spec.affinity`.
+  # See https://cloudnative-pg.io/docs/current/scheduling/
+  affinity: {}
+
   # Storage configuration, see https://cloudnative-pg.io/docs/current/storage/
   storage:
     class: standard
@@ -126,5 +130,5 @@ additionalService:
 
 # Enviornment variables
 env: {}
-  # - name: MY_ENV_VARIABLE
-  #   value: my-value
+# - name: MY_ENV_VARIABLE
+#   value: my-value

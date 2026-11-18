@@ -24,6 +24,10 @@ spec:
   resources:
     {{- toYaml . | nindent 4 }}
   {{- end }}
+  {{- with .Values.postgres.affinity }}
+  affinity:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   storage:
     storageClass: {{ .Values.postgres.storage.class }}
     resizeInUseVolumes: {{ .Values.postgres.storage.data.resizeInUseVolume }}
