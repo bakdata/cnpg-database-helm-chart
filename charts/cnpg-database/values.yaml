@@ -39,7 +39,9 @@ postgres:
     initdb:
       # runs against the application database after it and its owner have been created
       postInitApplicationSQL: []
-    #  - CREATE EXTENSION IF NOT EXISTS pg_repack;
+#        - CREATE EXTENSION IF NOT EXISTS pg_repack;
+#        - GRANT USAGE, CREATE ON SCHEMA repack TO "<app-user>";
+#        - GRANT ALL ON ALL TABLES IN SCHEMA repack TO "<app-user>";
     recovery:
       enabled: false
       # Name of the S3 backup to recover from. Uses S3 settings and method from backup section.
@@ -132,7 +134,7 @@ additionalService:
   # Whether to chose the primary or the readonly replica instance
   instanceRole: replica
 
-# Scheduled jobs that run client tools (pg_repack, psql, ...) against the primary of the cluster.
+# (Scheduled) Jobs that run client tools (pg_repack, psql, ...) against the primary of the cluster.
 # Jobs use the image of the cluster, so client and server versions always match, and connect as the owner of
 # postgres.bootstrap.database (PGHOST, PGDATABASE, PGUSER and PGPASSWORD are set).
 # Each job creates a CronJob named <fullname>-<name>, so names must be unique.
@@ -144,8 +146,7 @@ cronJobs: []
 #   schedule: "0 3 * * 0"
 #   timeZone: "Europe/Berlin"
 #   suspend: true
-#   # Unlimited if unset. The job is killed mid-run when the deadline is hit, which leaves pg_repack objects
-#   # behind that have to be cleaned up (DROP EXTENSION pg_repack CASCADE; CREATE EXTENSION pg_repack;).
+#   # Unlimited if unset. A killed repack job can leave objects behind requiring clean up.
 #   activeDeadlineSeconds: 43200
 #   # Runs with 'bash -ec'
 #   script: |
