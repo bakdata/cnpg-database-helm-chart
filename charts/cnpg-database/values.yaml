@@ -48,6 +48,12 @@ postgres:
   # Parameters passed to PostgreSQL: https://cloudnative-pg.io/docs/current/postgresql_conf/
   parameters: {}
 
+  # Optional CNPG synchronous replication configuration, passed to
+  # `spec.postgresql.synchronous`. With dataDurability: required, writes pause
+  # when the requested number of standbys is unavailable.
+  # See https://cloudnative-pg.io/docs/current/replication/
+  synchronous: {}
+
   groups: []
   # - "my_group_role"
 
