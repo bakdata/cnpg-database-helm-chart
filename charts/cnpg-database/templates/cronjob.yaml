@@ -1,0 +1,79 @@
+{{- $fullname := include "cnpg-database.fullname" . }}
+{{- $resourceNames := list }}
+{{- range $index, $job := .Values.cronJobs }}
+{{- $name := required (printf "cronJobs[%d].name is required" $index) $job.name }}
+{{- $schedule := required (printf "cronJobs[%d].schedule is required (job %q)" $index $name) $job.schedule }}
+{{- $script := required (printf "cronJobs[%d].script is required (job %q)" $index $name) $job.script }}
+{{- /* CronJob names are limited to 52 characters: the fullname prefix is shortened, the job name is always kept */}}
+{{- if gt (len $name) 30 }}
+{{- fail (printf "cronJobs[%d].name %q is too long: at most 30 characters are allowed" $index $name) }}
+{{- end }}
+{{- $resourceName := printf "%s-%s" ($fullname | trunc (int (sub 51 (len $name))) | trimAll "-") $name }}
+{{- if has $resourceName $resourceNames }}
+{{- fail (printf "cronJobs[%d].name %q is not unique: another job already renders the CronJob %q. Job names must be unique, also after truncating the CronJob name to 52 characters." $index $name $resourceName) }}
+{{- end }}
+{{- $resourceNames = append $resourceNames $resourceName }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ $resourceName }}
+  labels:
+    {{- include "cnpg-database.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $name | quote }}
+spec:
+  schedule: {{ $schedule | quote }}
+  {{- with $job.timeZone }}
+  timeZone: {{ . | quote }}
+  {{- end }}
+  suspend: {{ $job.suspend | default false }}
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      # Never retried: a failed maintenance run may need manual cleanup first
+      backoffLimit: 0
+      {{- with $job.activeDeadlineSeconds }}
+      activeDeadlineSeconds: {{ . }}
+      {{- end }}
+      template:
+        metadata:
+          labels:
+            {{- include "cnpg-database.selectorLabels" $ | nindent 12 }}
+            app.kubernetes.io/component: {{ $name | quote }}
+        spec:
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          containers:
+            - name: job
+              # Same image as the cluster, so client tools always match the server version
+              image: "{{ $.Values.postgres.image.repository }}:{{ $.Values.postgres.image.tag }}"
+              # Overriding the command keeps the image's entrypoint from running, only the client tools are used
+              command: ["bash", "-ec"]
+              args:
+                - {{ $script | quote }}
+              env:
+                # libpq environment variables: Postgres client tools (psql, pg_repack, vacuumdb, ...) use them as
+                # connection defaults, so scripts need no connection arguments.
+                # Uses the -rw service that always points to the current primary.
+                - name: PGHOST
+                  value: {{ printf "%s-rw" $fullname | quote }}
+                - name: PGDATABASE
+                  value: {{ $.Values.postgres.bootstrap.database | quote }}
+                - name: PGUSER
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ $fullname }}-app
+                      key: username
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ $fullname }}-app
+                      key: password
+                {{- with $job.env }}
+                {{- toYaml . | nindent 16 }}
+                {{- end }}
+              {{- with $job.resources }}
+              resources:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+{{- end }}

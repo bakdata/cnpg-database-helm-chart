@@ -39,7 +39,9 @@ postgres:
     initdb:
       # runs against the application database after it and its owner have been created
       postInitApplicationSQL: []
-    #  - CREATE EXTENSION IF NOT EXISTS pg_repack;
+#        - CREATE EXTENSION IF NOT EXISTS pg_repack;
+#        - GRANT USAGE, CREATE ON SCHEMA repack TO "<app-user>";
+#        - GRANT ALL ON ALL TABLES IN SCHEMA repack TO "<app-user>";
     recovery:
       enabled: false
       # Name of the S3 backup to recover from. Uses S3 settings and method from backup section.
@@ -137,6 +139,35 @@ additionalService:
 
   # Whether to chose the primary or the readonly replica instance
   instanceRole: replica
+
+# (Scheduled) Jobs that run client tools (pg_repack, psql, ...) against the primary of the cluster.
+# Jobs use the image of the cluster, so client and server versions always match, and connect as the owner of
+# postgres.bootstrap.database (PGHOST, PGDATABASE, PGUSER and PGPASSWORD are set).
+# Each job creates a CronJob named <fullname>-<name>, so names must be unique.
+# Jobs never run concurrently and are not retried.
+cronJobs: []
+# Example: weekly pg_repack of a bloated table. Requires an image that ships pg_repack and the extension to be
+# created in the database, e.g. through postgres.bootstrap.initdb.postInitApplicationSQL.
+# - name: repack
+#   schedule: "0 3 * * 0"
+#   timeZone: "Europe/Berlin"
+#   suspend: true
+#   # Unlimited if unset. A killed repack job can leave objects behind requiring clean up.
+#   activeDeadlineSeconds: 43200
+#   # Runs with 'bash -ec'
+#   script: |
+#     pg_repack --table=public.my_table --order-by="id" --jobs=2 --no-superuser-check
+#     psql -c 'ANALYZE public.my_table'
+#   # Additional environment variables
+#   env:
+#     - name: PGOPTIONS
+#       value: "-c maintenance_work_mem=2GB -c work_mem=2GB"
+#   resources:
+#     requests:
+#       memory: "128Mi"
+#       cpu: "50m"
+#     limits:
+#       memory: "256Mi"
 
 # Enviornment variables
 env: {}
