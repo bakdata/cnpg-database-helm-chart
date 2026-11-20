@@ -4,8 +4,11 @@
 {{- $name := required (printf "cronJobs[%d].name is required" $index) $job.name }}
 {{- $schedule := required (printf "cronJobs[%d].schedule is required (job %q)" $index $name) $job.schedule }}
 {{- $script := required (printf "cronJobs[%d].script is required (job %q)" $index $name) $job.script }}
-{{- /* CronJob names are limited to 52 characters */}}
-{{- $resourceName := printf "%s-%s" $fullname $name | trunc 52 | trimSuffix "-" }}
+{{- /* CronJob names are limited to 52 characters: the fullname prefix is shortened, the job name is always kept */}}
+{{- if gt (len $name) 30 }}
+{{- fail (printf "cronJobs[%d].name %q is too long: at most 30 characters are allowed" $index $name) }}
+{{- end }}
+{{- $resourceName := printf "%s-%s" ($fullname | trunc (int (sub 51 (len $name))) | trimAll "-") $name }}
 {{- if has $resourceName $resourceNames }}
 {{- fail (printf "cronJobs[%d].name %q is not unique: another job already renders the CronJob %q. Job names must be unique, also after truncating the CronJob name to 52 characters." $index $name $resourceName) }}
 {{- end }}
