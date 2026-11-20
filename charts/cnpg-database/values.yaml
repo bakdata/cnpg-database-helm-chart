@@ -54,6 +54,11 @@ postgres:
   # See https://cloudnative-pg.io/docs/current/replication/
   synchronous: {}
 
+  # Additional CNPG Cluster spec fields, deep-merged into the rendered spec.
+  # Values here take precedence over chart-managed fields (including nested maps).
+  # For example: clusterSpec: {failoverDelay: 60}
+  clusterSpec: {}
+
   groups: []
   # - "my_group_role"
 
