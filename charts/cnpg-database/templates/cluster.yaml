@@ -1,3 +1,4 @@
+{{- define "cnpg-database.clusterManifest" -}}
 # yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/refs/heads/main/postgresql.cnpg.io/cluster_v1.json
 {{- if not (has .Values.backup.method (list "native" "plugin")) }}
 {{- fail (printf "backup.method must be either \"native\" or \"plugin\", got %q" .Values.backup.method) }}
@@ -163,3 +164,11 @@ spec:
   env:
     {{- toYaml . | nindent 4 }}
   {{- end }}
+{{- end -}}
+{{- $manifest := include "cnpg-database.clusterManifest" . | fromYaml -}}
+{{- $extraSpec := .Values.postgres.clusterSpec | default dict -}}
+{{- if not (kindIs "map" $extraSpec) -}}
+{{- fail "postgres.clusterSpec must be a map of Cluster spec fields" -}}
+{{- end -}}
+{{- $_ := set $manifest "spec" (mustMergeOverwrite (deepCopy $manifest.spec) (deepCopy $extraSpec)) -}}
+{{- toYaml $manifest -}}
